@@ -54,5 +54,5 @@ func main() {
 		log.Fatal(err)
 	}
 	defer multipleDelegationsFile.Close()
-	delegationsModule.WriteMultipleDelegations(delegationsMap, delegationResponses, csv.NewWriter(multipleDelegationsFile))
+	delegationsModule.WriteMultipleDelegations(validators, delegationsMap, delegationResponses, csv.NewWriter(multipleDelegationsFile))
 }

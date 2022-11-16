@@ -78,8 +78,6 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 
 			delegationResponses = append(delegationResponses, DelegationResponsesResult.DelegationResponses...)
 		}
-
-		break
 	}
 
 	return &delegationResponses, nil
@@ -91,7 +89,6 @@ func GetDelegationsWithTotalBalance(delegationResponses *delegationTypes.Delegat
 
 	for _, delegationResponse := range *delegationResponses {
 		delegation := delegationResponse.Delegation
-		fmt.Println(delegation)
 
 		// if the delegator is already in the map, then we need to add the delegation amount to the existing delegation
 		if delegationWithBalance, ok := delegationsMap[delegation.DelegatorAddress]; ok {
@@ -141,10 +138,15 @@ func WriteDelegations(delegationsMap *DelegationsWithTotalBalance, delegationRes
 }
 
 // writes delegations who are delegated to multiple validators
-func WriteMultipleDelegations(delegationsMap *DelegationsWithTotalBalance, delegationResponses *delegationTypes.DelegationResponses,
+func WriteMultipleDelegations(validators *delegationTypes.Validators, delegationsMap *DelegationsWithTotalBalance, delegationResponses *delegationTypes.DelegationResponses,
 	writer *csv.Writer,
 ) {
 	fmt.Println("Writing multiple delegations to csv file")
+
+	validatorsMap := make(map[string]delegationTypes.Validator)
+	for _, validator := range *validators {
+		validatorsMap[validator.OperatorAddress] = validator
+	}
 
 	writer.Write([]string{"delegator", "validator", "bonded_token"})
 
@@ -156,7 +158,17 @@ func WriteMultipleDelegations(delegationsMap *DelegationsWithTotalBalance, deleg
 				strDelegaton := make([]string, 0)
 				strDelegaton = append(strDelegaton, delegationResponse.Delegation.DelegatorAddress)
 				strDelegaton = append(strDelegaton, delegationResponse.Delegation.ValidatorAddress)
-				strDelegaton = append(strDelegaton, delegationResponse.Balance.Denom)
+
+				// this is to get the delegator's bonded tokens. If a delegator is unbonding or redelegating
+				// the tokens are still bonded unless the validator itself is unbonded. In that case the delegator
+				// is by default unbonded. There is an issue here which is noted in this github issue:
+				// https://github.com/cosmos/cosmos-sdk/issues/11350
+				if validator, ok := validatorsMap[delegationResponse.Delegation.ValidatorAddress]; ok &&
+					validator.Status == delegationTypes.Bonded {
+					strDelegaton = append(strDelegaton, delegationResponse.Balance.Amount.String())
+				} else {
+					strDelegaton = append(strDelegaton, "0")
+				}
 
 				writer.Write(strDelegaton)
 			}
