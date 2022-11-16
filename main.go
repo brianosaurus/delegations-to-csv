@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-    "os"
-    "log"
-    "encoding/csv"
+	"os"
+	"log"
+	"encoding/csv"
 
 	delegationsModule "github.com/brianosaurus/challenge1/delegations"
 	validatorsModule "github.com/brianosaurus/challenge1/validators"
@@ -41,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-    delegationsMap := delegationsModule.GetDelegationsWithTotalBalance(delegationResponses)
+	delegationsMap := delegationsModule.GetDelegationsWithTotalBalance(delegationResponses)
 
 	delegationsFile, err := os.OpenFile(delegationsOutputFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
