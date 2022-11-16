@@ -148,7 +148,7 @@ func WriteMultipleDelegations(validators *delegationTypes.Validators, delegation
 		validatorsMap[validator.OperatorAddress] = validator
 	}
 
-	writer.Write([]string{"delegator", "validator", "bonded_token"})
+	writer.Write([]string{"delegator", "validator", "bonded_tokens"})
 
 	for _, delegationWithTotalBalance := range *delegationsMap {
 		delegationResponses := delegationWithTotalBalance.DelegationResponses
