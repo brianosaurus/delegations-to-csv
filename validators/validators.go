@@ -19,11 +19,11 @@ import (
 // get all validators
 func GetValidators(node string) (*validatorTypes.Validators, error) {
 	fmt.Println("Getting validators")
-	var validators = make(validatorTypes.Validators, 0)
+	validators := make(validatorTypes.Validators, 0)
 
 	// Create a connection to the gRPC server.
 	grpcConn, err := grpc.Dial(
-		node,                // your gRPC server address.
+		node, // your gRPC server address.
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // The Cosmos SDK doesn't support any transport security mechanism.
 		// This instantiates a general gRPC codec which handles proto bytes. We pass in a nil interface registry
 		// if the request/response types contain interface instead of 'nil' you should pass the application specific codec.
@@ -58,7 +58,6 @@ func GetValidators(node string) (*validatorTypes.Validators, error) {
 	}
 
 	return &validators, nil
-
 }
 
 // writes validators sorted by voting power to a csv file
