@@ -64,7 +64,7 @@ wosmongton,2445932,1,2445932846498.000000000000000000
 This file lists the multiple delegations for each delegator that has delegated tokens to more than one validator. The colums are labeled on the first line of the csv: delegator, validator, bonded_tokens. Bonded tokens is zero if the validator is unbonded.
 
 ```csv
-delegator,validator,bonded_token
+delegator,validator,bonded_tokens
 osmo1kpn0v2rz54aljzdyflxhfd686kazfkjh7u0qg0,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya,10
 osmo1kpn0v2rz54aljzdyflxhfd686kazfkjh7u0qg0,osmovaloper1gy0nyn2hscxxayj2pdyu8axmfvv75nnvhc079s,10
 osmo1kpn0v2rz54aljzdyflxhfd686kazfkjh7u0qg0,osmovaloper196ax4vc0lwpxndu9dyhvca7jhxp70rmcmmarz7,10
