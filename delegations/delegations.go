@@ -17,6 +17,12 @@ import (
 	delegationTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
+// these are so we can mock out the grpc connection for testing
+var (
+	grpcDial = grpc.Dial
+	delegationTypesNewQueryClient = delegationTypes.NewQueryClient
+)
+
 // this will hold not only the delegation responses for a delegation addr but also the total delegation amount
 type DelegationResponsesWithTotalBalance struct {
 	DelegationResponses delegationTypes.DelegationResponses
@@ -35,7 +41,7 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 	delegationResponses := make(delegationTypes.DelegationResponses, 0)
 
 	// Create a connection to the gRPC server.
-	grpcConn, err := grpc.Dial(
+	grpcConn, err := grpcDial(
 		node, // your gRPC server address.
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // The Cosmos SDK doesn't support any transport security mechanism.
 		// This instantiates a general gRPC codec which handles proto bytes. We pass in a nil interface registry
@@ -46,7 +52,7 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 		return &delegationResponses, err
 	}
 	defer grpcConn.Close()
-	DelegationResponsesClient := delegationTypes.NewQueryClient(grpcConn)
+	DelegationResponsesClient := delegationTypesNewQueryClient(grpcConn)
 
 	for _, validator := range *validators {
 		fmt.Println("Getting delegation responses for validator:", validator.Description.Moniker)

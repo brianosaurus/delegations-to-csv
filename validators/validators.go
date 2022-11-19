@@ -16,13 +16,19 @@ import (
 	validatorTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
+// these are so we can mock out the grpc connection for testing
+var (
+	grpcDial = grpc.Dial
+	validatorTypesNewQueryClient = validatorTypes.NewQueryClient
+)
+
 // get all validators
 func GetValidators(node string) (*validatorTypes.Validators, error) {
 	fmt.Println("Getting validators")
 	validators := make(validatorTypes.Validators, 0)
 
 	// Create a connection to the gRPC server.
-	grpcConn, err := grpc.Dial(
+	grpcConn, err := grpcDial(
 		node, // your gRPC server address.
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // The Cosmos SDK doesn't support any transport security mechanism.
 		// This instantiates a general gRPC codec which handles proto bytes. We pass in a nil interface registry
@@ -35,7 +41,7 @@ func GetValidators(node string) (*validatorTypes.Validators, error) {
 	defer grpcConn.Close()
 
 	// This creates a gRPC client to query the x/bank service.
-	validatorsClient := validatorTypes.NewQueryClient(grpcConn)
+	validatorsClient := validatorTypesNewQueryClient(grpcConn)
 	validatorsResult, err := validatorsClient.Validators(
 		context.Background(),
 		&validatorTypes.QueryValidatorsRequest{Pagination: &queryTypes.PageRequest{Limit: 100}},

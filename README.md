@@ -27,7 +27,9 @@ getData will overwrite the output files on subsequent runs (for convenience).
 
 ### validators.csv
 
-The columns are labeled on the first line of the csv: moniker, voting_power, self_delegation, and total_delegation.
+The columns are labeled on the first line of the csv: 
+
+```moniker, voting_power, self_delegation, and total_delegation```
 
 ```csv
 moniker,voting_power,self_delegation,total_delegation
@@ -44,7 +46,9 @@ wosmongton,2445932,1,2445932846498.000000000000000000
 
 ### delegations.csv
 
-This file can be very large but it lists the totals for each delegator across all validators. The colums are labeled on the first line of the csv: delegator, voting_power.
+This file can be very large but it lists the totals for each delegator across all validators. The colums are labeled on the first line of the csv: 
+
+```delegator, voting_power```
 
 ```csv
 moniker,voting_power,self_delegation,total_delegation
@@ -61,7 +65,11 @@ wosmongton,2445932,1,2445932846498.000000000000000000
 
 ### multipleDelegations.csv
 
-This file lists the multiple delegations for each delegator that has delegated tokens to more than one validator. The colums are labeled on the first line of the csv: delegator, validator, bonded_tokens. Bonded tokens is zero if the validator is unbonded.
+This file lists the multiple delegations for each delegator that has delegated tokens to more than one validator. The colums are labeled on the first line of the csv: 
+
+```delegator, validator, bonded_tokens```
+
+Bonded tokens is zero if the validator is unbonded.
 
 ```csv
 delegator,validator,bonded_tokens
