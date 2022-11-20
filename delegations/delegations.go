@@ -5,8 +5,6 @@ import (
 	"fmt"
 	big "math/big"
 
-	"testing"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -20,7 +18,6 @@ import (
 var (
 	GrpcDial = grpc.Dial
 	DelegationTypesNewQueryClient = delegationTypes.NewQueryClient
-	ttt *testing.T
 )
 
 // this will hold not only the delegation responses for a delegation addr but also the total delegation amount
@@ -88,8 +85,6 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 
 			delegationResponses = append(delegationResponses, delegationResponsesResult.DelegationResponses...)
 		}
-
-		break
 	}
 
 	return &delegationResponses, nil

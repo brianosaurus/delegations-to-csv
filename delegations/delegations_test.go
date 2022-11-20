@@ -2,8 +2,6 @@ package delegations
 
 import (
 	"encoding/json"
-	// "strings"
-	// big "math/big"
 
 	context "context"
 	"testing"
@@ -11,6 +9,8 @@ import (
 	query "github.com/cosmos/cosmos-sdk/types/query"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	"google.golang.org/grpc"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	delegationTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/stretchr/testify/assert"
@@ -67,7 +67,6 @@ type ClientConn struct {
 }
 
 func (c *ClientConn) Close() error {
-	tt.Log("stubbed out ClientConn.Close")
 	return nil
 }
 
@@ -81,7 +80,6 @@ type queryClient struct {
 
 func (q *queryClient) ValidatorDelegations(ctx context.Context, in *delegationTypes.QueryValidatorDelegationsRequest, 
 	opts ...grpc.CallOption) (*delegationTypes.QueryValidatorDelegationsResponse, error) {
-	tt.Log("stubbed out ValidatorDelegations")
 	var responses []delegationTypes.DelegationResponse
 	err := json.Unmarshal([]byte(DELEGATION_RESPONSES), &responses)
 	if err != nil {
@@ -101,14 +99,12 @@ func (q *queryClient) ValidatorDelegations(ctx context.Context, in *delegationTy
 // Assert *ClientConn implements ClientConnInterface.
 	
 func stubDelegationResponses(t *testing.T) {
-	t.Log("stub method called")
 	// stub out the grpc connection for testing
 	GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 		return nil, nil
 	}
 
 	DelegationTypesNewQueryClient = func(conn grpc1.ClientConn) delegationTypes.QueryClient {
-		t.Log("stubbed out DelegationTypesNewQueryClient")
 		client := &queryClient{}
 		return client
 	}
@@ -116,11 +112,8 @@ func stubDelegationResponses(t *testing.T) {
 
 func TestGetDelegationResponses(t *testing.T) {
 	tt = t
-	ttt = t
 	stubDelegationResponses(t)
-	// cdc := codec.NewLegacyAmino()
 	validators := make(delegationTypes.Validators, 1)
-	// cdc.UnmarshalJSON([]byte(validators), &VALIDATORS)
 
 	err := json.Unmarshal([]byte(VALIDATORS), &validators)
 	if err != nil {
@@ -134,4 +127,37 @@ func TestGetDelegationResponses(t *testing.T) {
 
 	assert.Equal(t, 1, len(validators))
 	assert.Equal(t, 1, len(*delegationResponses))
+	assert.Equal(t, "osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l", (*delegationResponses)[0].Delegation.DelegatorAddress)
+	assert.Equal(t, "osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya", (*delegationResponses)[0].Delegation.ValidatorAddress)
+	assert.Equal(t, sdk.MustNewDecFromStr("10.000000000000000000"), (*delegationResponses)[0].Delegation.Shares)
+	assert.Equal(t, "uosmo", (*delegationResponses)[0].Balance.Denom)
+	assert.Equal(t, "10", (*delegationResponses)[0].Balance.Amount.String())
+}
+
+func TestGetDelegationsWithTotalBalance(t *testing.T) {
+	tt = t
+
+	stubDelegationResponses(t)
+	validators := make(delegationTypes.Validators, 1)
+
+	err := json.Unmarshal([]byte(VALIDATORS), &validators)
+	if err != nil {
+		t.Error(err)
+	}
+
+	delegationResponses, err := GetDelegationResponses("node value not needed", &validators)
+	if err != nil {
+		t.Error(err)
+	}
+
+	delegationsWithTotalBalance := GetDelegationsWithTotalBalance(delegationResponses)
+
+	assert.Equal(t, 1, len(*delegationsWithTotalBalance))
+	for _, delegation := range *delegationsWithTotalBalance {
+		assert.Equal(t, "osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l", delegation.DelegationResponses[0].Delegation.DelegatorAddress)
+		assert.Equal(t, "osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya", delegation.DelegationResponses[0].Delegation.ValidatorAddress)
+		assert.Equal(t, sdk.MustNewDecFromStr("10.000000000000000000"), delegation.DelegationResponses[0].Delegation.Shares)
+		assert.Equal(t, "uosmo", delegation.DelegationResponses[0].Balance.Denom)
+		assert.Equal(t, "10", delegation.DelegationResponses[0].Balance.Amount.String())
+	}
 }

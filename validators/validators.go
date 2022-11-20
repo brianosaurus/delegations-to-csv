@@ -15,8 +15,8 @@ import (
 
 // these are so we can mock out the grpc connection for testing
 var (
-	grpcDial = grpc.Dial
-	validatorTypesNewQueryClient = validatorTypes.NewQueryClient
+	GrpcDial = grpc.Dial
+	ValidatorTypesNewQueryClient = validatorTypes.NewQueryClient
 )
 
 // get all validators
@@ -25,7 +25,7 @@ func GetValidators(node string) (*validatorTypes.Validators, error) {
 	validators := make(validatorTypes.Validators, 0)
 
 	// Create a connection to the gRPC server.
-	grpcConn, err := grpcDial(
+	grpcConn, err := GrpcDial(
 		node, // your gRPC server address.
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // The Cosmos SDK doesn't support any transport security mechanism.
 		// This instantiates a general gRPC codec which handles proto bytes. We pass in a nil interface registry
@@ -35,13 +35,17 @@ func GetValidators(node string) (*validatorTypes.Validators, error) {
 	if err != nil {
 		return &validators, err
 	}
-	defer grpcConn.Close()
+
+	// this is a hack to make testing work. I'm sure there is a better solution but I had to punt due to time
+	if grpcConn != nil {
+		defer grpcConn.Close()
+	}
 
 	// This creates a gRPC client to query the x/bank service.
-	validatorsClient := validatorTypesNewQueryClient(grpcConn)
+	validatorsClient := ValidatorTypesNewQueryClient(grpcConn)
 	validatorsResult, err := validatorsClient.Validators(
 		context.Background(),
-		&validatorTypes.QueryValidatorsRequest{Pagination: &queryTypes.PageRequest{Limit: 100}},
+		&validatorTypes.QueryValidatorsRequest{Pagination: &queryTypes.PageRequest{Limit: 1000}},
 	)
 	if err != nil {
 		return &validators, err
