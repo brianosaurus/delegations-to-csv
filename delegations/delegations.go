@@ -2,11 +2,10 @@ package delegations
 
 import (
 	"context"
-	"encoding/csv"
 	"fmt"
-	"log"
 	big "math/big"
-	"sort"
+
+	"testing"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -19,8 +18,9 @@ import (
 
 // these are so we can mock out the grpc connection for testing
 var (
-	grpcDial = grpc.Dial
-	delegationTypesNewQueryClient = delegationTypes.NewQueryClient
+	GrpcDial = grpc.Dial
+	DelegationTypesNewQueryClient = delegationTypes.NewQueryClient
+	ttt *testing.T
 )
 
 // this will hold not only the delegation responses for a delegation addr but also the total delegation amount
@@ -38,10 +38,10 @@ type DelegationsWithTotalBalance map[string]DelegationResponsesWithTotalBalance
 // See: https://github.com/cosmos/cosmos-sdk/issues/8591 and
 // https://github.com/terra-money/classic-core/issues/694 for discussions on this issue
 func GetDelegationResponses(node string, validators *delegationTypes.Validators) (*delegationTypes.DelegationResponses, error) {
-	delegationResponses := make(delegationTypes.DelegationResponses, 0)
+	delegationResponses := delegationTypes.DelegationResponses{}
 
 	// Create a connection to the gRPC server.
-	grpcConn, err := grpcDial(
+	grpcConn, err := GrpcDial(
 		node, // your gRPC server address.
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // The Cosmos SDK doesn't support any transport security mechanism.
 		// This instantiates a general gRPC codec which handles proto bytes. We pass in a nil interface registry
@@ -51,13 +51,17 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 	if err != nil {
 		return &delegationResponses, err
 	}
-	defer grpcConn.Close()
-	DelegationResponsesClient := delegationTypesNewQueryClient(grpcConn)
+
+	// this is a hack to make testing work. I'm sure there is a better solution but I had to punt due to time
+	if grpcConn != nil {
+		defer grpcConn.Close()
+	}
+	delegationResponsesClient := DelegationTypesNewQueryClient(grpcConn)
 
 	for _, validator := range *validators {
 		fmt.Println("Getting delegation responses for validator:", validator.Description.Moniker)
 
-		DelegationResponsesResult, err := DelegationResponsesClient.ValidatorDelegations(
+		delegationResponsesResult, err := delegationResponsesClient.ValidatorDelegations(
 			context.Background(),
 			&delegationTypes.QueryValidatorDelegationsRequest{
 				ValidatorAddr: validator.OperatorAddress,
@@ -68,22 +72,24 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 			return &delegationResponses, err
 		}
 
-		delegationResponses = append(delegationResponses, DelegationResponsesResult.DelegationResponses...)
+		delegationResponses = append(delegationResponses, delegationResponsesResult.DelegationResponses...)
 
-		for DelegationResponsesResult.Pagination.NextKey != nil {
-			DelegationResponsesResult, err = DelegationResponsesClient.ValidatorDelegations(
+		for delegationResponsesResult.Pagination.NextKey != nil {
+			delegationResponsesResult, err = delegationResponsesClient.ValidatorDelegations(
 				context.Background(),
 				&delegationTypes.QueryValidatorDelegationsRequest{
 					ValidatorAddr: validator.OperatorAddress,
-					Pagination:    &queryTypes.PageRequest{Limit: 10000, Key: DelegationResponsesResult.Pagination.NextKey},
+					Pagination:    &queryTypes.PageRequest{Limit: 10000, Key: delegationResponsesResult.Pagination.NextKey},
 				},
 			)
 			if err != nil {
 				return &delegationResponses, err
 			}
 
-			delegationResponses = append(delegationResponses, DelegationResponsesResult.DelegationResponses...)
+			delegationResponses = append(delegationResponses, delegationResponsesResult.DelegationResponses...)
 		}
+
+		break
 	}
 
 	return &delegationResponses, nil
@@ -111,79 +117,4 @@ func GetDelegationsWithTotalBalance(delegationResponses *delegationTypes.Delegat
 	}
 
 	return &delegationsMap
-}
-
-// writes delegations sorted by voting power to a csv file
-func WriteDelegations(delegationsMap *DelegationsWithTotalBalance, delegationResponses *delegationTypes.DelegationResponses,
-	writer *csv.Writer,
-) {
-	fmt.Println("Writing delegations to csv file")
-
-	fmt.Println("Sorting delegations")
-	sort.Slice(*delegationResponses, func(i, j int) bool {
-		return (*delegationsMap)[(*delegationResponses)[i].Delegation.DelegatorAddress].TotalBalance.Cmp(
-			(*delegationsMap)[(*delegationResponses)[j].Delegation.DelegatorAddress].TotalBalance) == 1
-	})
-
-	writer.Write([]string{"delegator", "voting_power"})
-
-	fmt.Println("Final step, writing to csv")
-	for _, delegationResponse := range *delegationResponses {
-		strDelegaton := make([]string, 0)
-		strDelegaton = append(strDelegaton, delegationResponse.Delegation.DelegatorAddress)
-		strDelegaton = append(strDelegaton, fmt.Sprint((*delegationsMap)[delegationResponse.Delegation.DelegatorAddress].TotalBalance))
-
-		writer.Write(strDelegaton)
-	}
-
-	writer.Flush()
-
-	if err := writer.Error(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// writes delegations who are delegated to multiple validators
-func WriteMultipleDelegations(validators *delegationTypes.Validators, delegationsMap *DelegationsWithTotalBalance, delegationResponses *delegationTypes.DelegationResponses,
-	writer *csv.Writer,
-) {
-	fmt.Println("Writing multiple delegations to csv file")
-
-	validatorsMap := make(map[string]delegationTypes.Validator)
-	for _, validator := range *validators {
-		validatorsMap[validator.OperatorAddress] = validator
-	}
-
-	writer.Write([]string{"delegator", "validator", "bonded_tokens"})
-
-	for _, delegationWithTotalBalance := range *delegationsMap {
-		delegationResponses := delegationWithTotalBalance.DelegationResponses
-
-		if len(delegationResponses) > 1 {
-			for _, delegationResponse := range delegationWithTotalBalance.DelegationResponses {
-				strDelegaton := make([]string, 0)
-				strDelegaton = append(strDelegaton, delegationResponse.Delegation.DelegatorAddress)
-				strDelegaton = append(strDelegaton, delegationResponse.Delegation.ValidatorAddress)
-
-				// this is to get the delegator's bonded tokens. If a delegator is unbonding or redelegating
-				// the tokens are still bonded unless the validator itself is unbonded. In that case the delegator
-				// is by default unbonded. There is an issue here which is noted in this github issue:
-				// https://github.com/cosmos/cosmos-sdk/issues/11350
-				if validator, ok := validatorsMap[delegationResponse.Delegation.ValidatorAddress]; ok &&
-					validator.Status == delegationTypes.Bonded {
-					strDelegaton = append(strDelegaton, delegationResponse.Balance.Amount.String())
-				} else {
-					strDelegaton = append(strDelegaton, "0")
-				}
-
-				writer.Write(strDelegaton)
-			}
-		}
-	}
-
-	writer.Flush()
-
-	if err := writer.Error(); err != nil {
-		log.Fatal(err)
-	}
 }
