@@ -23,6 +23,11 @@ Usage of ./getData:
 
 getData will overwrite the output files on subsequent runs (for convenience).
 
+To run the tests
+```sh
+go test ./...
+```
+
 ## Output file formats
 
 ### validators.csv
