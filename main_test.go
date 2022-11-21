@@ -227,7 +227,9 @@ func TestWriteValidators(t *testing.T) {
 
   WriteValidators(validators, writer)
 
-	t.Log("buf.String()", buf.String())
+
+	// I have no idea why but this fixes tests
+	_ = buf.String()
 	
 	assert.Equal(t, 
 `moniker,voting_power,self_delegation,total_delegation
@@ -272,6 +274,8 @@ func TestWriteDelegations(t *testing.T) {
 
   WriteDelegations(delegationsMap, writer)
 
+	// t.Log("buf.String()", buf.String())
+
 	assert.Equal(t, 
 `delegator,voting_power
 osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69a,40
@@ -315,9 +319,6 @@ func TestWriteMultipleDelegations(t *testing.T) {
   writer := csv.NewWriter(bufWriter)
 
 	WriteMultipleDelegations(validators, delegationsMap, delegationResponses, writer)
-
-	// I don't know why but this fixes the test
-	// _ = buf.String()
 
 	assert.Equal(t, 
 `delegator,validator,bonded_tokens
