@@ -83,7 +83,7 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 				return &delegationResponses, err
 			}
 
-			delegationResponses = append(delegationResponses, delegationResponsesResult.DelegationResponses...)
+			// delegationResponses = append(delegationResponses, delegationResponsesResult.DelegationResponses...)
 		}
 	}
 

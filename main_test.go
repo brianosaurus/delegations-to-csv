@@ -178,7 +178,16 @@ func (q *queryClient) ValidatorDelegations(ctx context.Context, in *delegationTy
 		Pagination: nil,
 	}
 
-	return &response, nil
+	var delegationsResponse delegationTypes.QueryValidatorDelegationsResponse
+
+	// filter for this validataor
+	for _, delegation := range response.DelegationResponses {
+		if delegation.Delegation.ValidatorAddress == in.ValidatorAddr {
+			delegationsResponse.DelegationResponses = append(delegationsResponse.DelegationResponses, delegation)
+		}
+	}
+
+	return &delegationsResponse, nil
 }
 
 func stubDelegationResponses() {
@@ -216,7 +225,6 @@ func TestWriteValidators(t *testing.T) {
 		validator.ConsensusPubkey = pk1Any
 	}
 
-	
   WriteValidators(validators, writer)
 
 	t.Log("buf.String()", buf.String())
@@ -266,8 +274,8 @@ func TestWriteDelegations(t *testing.T) {
 
 	assert.Equal(t, 
 `delegator,voting_power
-osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69a,80
-osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l,40
+osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69a,40
+osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l,20
 `, buf.String())
 }
 
@@ -309,16 +317,12 @@ func TestWriteMultipleDelegations(t *testing.T) {
 	WriteMultipleDelegations(validators, delegationsMap, delegationResponses, writer)
 
 	// I don't know why but this fixes the test
-	_ = buf.String()
+	// _ = buf.String()
 
 	assert.Equal(t, 
 `delegator,validator,bonded_tokens
 osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69a,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya,20
 osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69a,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fyb,20
-osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69a,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya,20
-osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69a,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fyb,20
-osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya,10
-osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fyb,10
 osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya,10
 osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l,osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fyb,10
 `, buf.String()) 

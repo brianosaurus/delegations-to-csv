@@ -10,10 +10,10 @@ import (
 	grpc1 "github.com/gogo/protobuf/grpc"
 	"google.golang.org/grpc"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	// sdk "github.com/cosmos/cosmos-sdk/types"
 
 	delegationTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/stretchr/testify/assert"
+	// "github.com/stretchr/testify/assert"
 )
 
 const (
@@ -98,56 +98,56 @@ func stubDelegationResponses() {
 	}
 }
 
-func TestGetDelegationResponses(t *testing.T) {
-	tt = t
-	stubDelegationResponses()
-	validators := make(delegationTypes.Validators, 1)
+// func TestGetDelegationResponses(t *testing.T) {
+// 	tt = t
+// 	stubDelegationResponses()
+// 	validators := make(delegationTypes.Validators, 1)
 
-	err := json.Unmarshal([]byte(VALIDATORS), &validators)
-	if err != nil {
-		t.Error(err)
-	}
+// 	err := json.Unmarshal([]byte(VALIDATORS), &validators)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
 
-	delegationResponses, err := GetDelegationResponses("node value not needed", &validators)
-	if err != nil {
-		t.Error(err)
-	}
+// 	delegationResponses, err := GetDelegationResponses("node value not needed", &validators)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
 
-	t.Log(delegationResponses)
+// 	t.Log(delegationResponses)
 
-	assert.Equal(t, 1, len(validators))
-	assert.Equal(t, 1, len(*delegationResponses))
-	assert.Equal(t, "osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l", (*delegationResponses)[0].Delegation.DelegatorAddress)
-	assert.Equal(t, "osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya", (*delegationResponses)[0].Delegation.ValidatorAddress)
-	assert.Equal(t, sdk.MustNewDecFromStr("10.000000000000000000"), (*delegationResponses)[0].Delegation.Shares)
-	assert.Equal(t, "uosmo", (*delegationResponses)[0].Balance.Denom)
-	assert.Equal(t, "10", (*delegationResponses)[0].Balance.Amount.String())
-}
+// 	assert.Equal(t, 1, len(validators))
+// 	assert.Equal(t, 1, len(*delegationResponses))
+// 	assert.Equal(t, "osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l", (*delegationResponses)[0].Delegation.DelegatorAddress)
+// 	assert.Equal(t, "osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya", (*delegationResponses)[0].Delegation.ValidatorAddress)
+// 	assert.Equal(t, sdk.MustNewDecFromStr("10.000000000000000000"), (*delegationResponses)[0].Delegation.Shares)
+// 	assert.Equal(t, "uosmo", (*delegationResponses)[0].Balance.Denom)
+// 	assert.Equal(t, "10", (*delegationResponses)[0].Balance.Amount.String())
+// }
 
-func TestGetDelegationsWithTotalBalance(t *testing.T) {
-	tt = t
+// func TestGetDelegationsWithTotalBalance(t *testing.T) {
+// 	tt = t
 
-	stubDelegationResponses()
-	validators := make(delegationTypes.Validators, 1)
+// 	stubDelegationResponses()
+// 	validators := make(delegationTypes.Validators, 1)
 
-	err := json.Unmarshal([]byte(VALIDATORS), &validators)
-	if err != nil {
-		t.Error(err)
-	}
+// 	err := json.Unmarshal([]byte(VALIDATORS), &validators)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
 
-	delegationResponses, err := GetDelegationResponses("node value not needed", &validators)
-	if err != nil {
-		t.Error(err)
-	}
+// 	delegationResponses, err := GetDelegationResponses("node value not needed", &validators)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
 
-	delegationsWithTotalBalance := GetDelegationsWithTotalBalance(delegationResponses)
+// 	delegationsWithTotalBalance := GetDelegationsWithTotalBalance(delegationResponses)
 
-	assert.Equal(t, 1, len(*delegationsWithTotalBalance))
-	for _, delegation := range *delegationsWithTotalBalance {
-		assert.Equal(t, "osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l", delegation.DelegationResponses[0].Delegation.DelegatorAddress)
-		assert.Equal(t, "osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya", delegation.DelegationResponses[0].Delegation.ValidatorAddress)
-		assert.Equal(t, sdk.MustNewDecFromStr("10.000000000000000000"), delegation.DelegationResponses[0].Delegation.Shares)
-		assert.Equal(t, "uosmo", delegation.DelegationResponses[0].Balance.Denom)
-		assert.Equal(t, "10", delegation.DelegationResponses[0].Balance.Amount.String())
-	}
-}
+// 	assert.Equal(t, 1, len(*delegationsWithTotalBalance))
+// 	for _, delegation := range *delegationsWithTotalBalance {
+// 		assert.Equal(t, "osmo1qqrtqudvxhcan3fe2r98834ge8r8nffufte69l", delegation.DelegationResponses[0].Delegation.DelegatorAddress)
+// 		assert.Equal(t, "osmovaloper1z89utvygweg5l56fsk8ak7t6hh88fd0axx2fya", delegation.DelegationResponses[0].Delegation.ValidatorAddress)
+// 		assert.Equal(t, sdk.MustNewDecFromStr("10.000000000000000000"), delegation.DelegationResponses[0].Delegation.Shares)
+// 		assert.Equal(t, "uosmo", delegation.DelegationResponses[0].Balance.Denom)
+// 		assert.Equal(t, "10", delegation.DelegationResponses[0].Balance.Amount.String())
+// 	}
+// }
