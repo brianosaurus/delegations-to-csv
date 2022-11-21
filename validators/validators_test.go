@@ -70,7 +70,7 @@ func (q *queryClient) Validators(ctx context.Context, in *validatorTypes.QueryVa
 	return &response, nil
 }
 
-func stubValidatorResponses(t *testing.T) {
+func stubValidatorResponses() {
 	// stub out the grpc connection for testing
 	GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 		return nil, nil
@@ -84,7 +84,7 @@ func stubValidatorResponses(t *testing.T) {
 
 func TestGetValidatorResponses(t *testing.T) {
 	tt = t
-	stubValidatorResponses(t)
+	stubValidatorResponses()
 
 	validators, err := GetValidators("node value not needed")
 	if err != nil {

@@ -62,21 +62,9 @@ const (
 
 var tt *testing.T
 
-type ClientConn struct {
-	grpc.ClientConn
-}
-
-func (c *ClientConn) Close() error {
-	return nil
-}
-
 type queryClient struct {
 	delegationTypes.QueryClient
 }
-
-// func (c *queryClient) Delegation(ctx context.Context, in *delegationTypes.QueryDelegationRequest, opts ...grpc.CallOption) (*delegationTypes.QueryDelegationResponse, error) {
-// 	return nil, nil
-// }
 
 func (q *queryClient) ValidatorDelegations(ctx context.Context, in *delegationTypes.QueryValidatorDelegationsRequest, 
 	opts ...grpc.CallOption) (*delegationTypes.QueryValidatorDelegationsResponse, error) {
@@ -98,7 +86,7 @@ func (q *queryClient) ValidatorDelegations(ctx context.Context, in *delegationTy
 
 // Assert *ClientConn implements ClientConnInterface.
 	
-func stubDelegationResponses(t *testing.T) {
+func stubDelegationResponses() {
 	// stub out the grpc connection for testing
 	GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 		return nil, nil
@@ -112,7 +100,7 @@ func stubDelegationResponses(t *testing.T) {
 
 func TestGetDelegationResponses(t *testing.T) {
 	tt = t
-	stubDelegationResponses(t)
+	stubDelegationResponses()
 	validators := make(delegationTypes.Validators, 1)
 
 	err := json.Unmarshal([]byte(VALIDATORS), &validators)
@@ -124,6 +112,8 @@ func TestGetDelegationResponses(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	t.Log(delegationResponses)
 
 	assert.Equal(t, 1, len(validators))
 	assert.Equal(t, 1, len(*delegationResponses))
@@ -137,7 +127,7 @@ func TestGetDelegationResponses(t *testing.T) {
 func TestGetDelegationsWithTotalBalance(t *testing.T) {
 	tt = t
 
-	stubDelegationResponses(t)
+	stubDelegationResponses()
 	validators := make(delegationTypes.Validators, 1)
 
 	err := json.Unmarshal([]byte(VALIDATORS), &validators)

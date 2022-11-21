@@ -53,7 +53,7 @@ func GetValidators(node string) (*validatorTypes.Validators, error) {
 
 	validators = append(validators, validatorsResult.GetValidators()...)
 
-	for validatorsResult.Pagination.NextKey != nil && false {
+	for validatorsResult.Pagination != nil && validatorsResult.Pagination.NextKey != nil && false {
 		validatorsResult, err = validatorsClient.Validators(
 			context.Background(),
 			&validatorTypes.QueryValidatorsRequest{Pagination: &queryTypes.PageRequest{Limit: 100, Key: validatorsResult.Pagination.NextKey}},

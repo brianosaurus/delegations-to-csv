@@ -17,24 +17,31 @@ import (
 )
 
 // writes delegations sorted by voting power to a csv file
-func WriteDelegations(delegationsMap *delegationsModule.DelegationsWithTotalBalance, delegationResponses *delegationTypes.DelegationResponses,
-	writer *csv.Writer,
-) {
+func WriteDelegations(delegationsMap *delegationsModule.DelegationsWithTotalBalance, writer *csv.Writer) {
 	fmt.Println("Writing delegations to csv file")
 
-	fmt.Println("Sorting delegations")
-	sort.Slice(*delegationResponses, func(i, j int) bool {
-		return (*delegationsMap)[(*delegationResponses)[i].Delegation.DelegatorAddress].TotalBalance.Cmp(
-			(*delegationsMap)[(*delegationResponses)[j].Delegation.DelegatorAddress].TotalBalance) == 1
-	})
+	delegations := make([]string, 0)
+
+	for _, delegationWithTotalBalance := range *delegationsMap {
+		if len(delegationWithTotalBalance.DelegationResponses) == 0 {
+			continue
+		}
+
+		address := delegationWithTotalBalance.DelegationResponses[0].Delegation.DelegatorAddress
+		delegations = append(delegations, address)
+	}
+
+	sort.Slice(delegations, func(i, j int) bool {
+		return (*delegationsMap)[delegations[i]].TotalBalance.Cmp(
+			(*delegationsMap)[delegations[j]].TotalBalance) == 1
+		})
 
 	writer.Write([]string{"delegator", "voting_power"})
 
-	fmt.Println("Final step, writing to csv")
-	for _, delegationResponse := range *delegationResponses {
+	for key, delegation := range *delegationsMap {
 		strDelegaton := make([]string, 0)
-		strDelegaton = append(strDelegaton, delegationResponse.Delegation.DelegatorAddress)
-		strDelegaton = append(strDelegaton, fmt.Sprint((*delegationsMap)[delegationResponse.Delegation.DelegatorAddress].TotalBalance))
+		strDelegaton = append(strDelegaton, key)
+		strDelegaton = append(strDelegaton, delegation.TotalBalance.String())
 
 		writer.Write(strDelegaton)
 	}
@@ -157,7 +164,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer delegationsFile.Close()
-	WriteDelegations(delegationsMap, delegationResponses, csv.NewWriter(delegationsFile))
+	WriteDelegations(delegationsMap, csv.NewWriter(delegationsFile))
 
 	multipleDelegationsFile, err := os.OpenFile(multipleDelegationsOutputFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {

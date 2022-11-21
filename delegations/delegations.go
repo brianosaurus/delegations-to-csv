@@ -71,7 +71,7 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 
 		delegationResponses = append(delegationResponses, delegationResponsesResult.DelegationResponses...)
 
-		for delegationResponsesResult.Pagination.NextKey != nil {
+		for delegationResponsesResult.Pagination != nil && delegationResponsesResult.Pagination.NextKey != nil {
 			delegationResponsesResult, err = delegationResponsesClient.ValidatorDelegations(
 				context.Background(),
 				&delegationTypes.QueryValidatorDelegationsRequest{
