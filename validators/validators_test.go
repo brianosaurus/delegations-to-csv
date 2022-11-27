@@ -10,6 +10,7 @@ import (
 	query "github.com/cosmos/cosmos-sdk/types/query"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -73,7 +74,14 @@ func (q *queryClient) Validators(ctx context.Context, in *validatorTypes.QueryVa
 func stubValidatorResponses() {
 	// stub out the grpc connection for testing
 	GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-		return nil, nil
+		ctx := context.Background()
+
+		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(nil))
+		if err != nil {
+			return nil, err
+		}
+
+		return conn, nil
 	}
 
 	ValidatorTypesNewQueryClient = func(conn grpc1.ClientConn) validatorTypes.QueryClient {

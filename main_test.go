@@ -11,6 +11,7 @@ import (
 
 	grpc1 "github.com/gogo/protobuf/grpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	delegationsModule "github.com/brianosaurus/challenge1/delegations"
 	validatorsModule "github.com/brianosaurus/challenge1/validators"
@@ -156,7 +157,14 @@ func (q *queryClient) Validators(ctx context.Context, in *validatorTypes.QueryVa
 func stubValidatorResponses() {
 	// stub out the grpc connection for testing
 	validatorsModule.GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-		return nil, nil
+		ctx := context.Background()
+
+		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(nil))
+		if err != nil {
+			return nil, err
+		}
+
+		return conn, nil
 	}
 
 	validatorsModule.ValidatorTypesNewQueryClient = func(conn grpc1.ClientConn) validatorTypes.QueryClient {
