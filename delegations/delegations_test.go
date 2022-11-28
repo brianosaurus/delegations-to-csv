@@ -92,7 +92,7 @@ func stubDelegationResponses() {
 	GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 		ctx := context.Background()
 
-		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(nil))
+		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return nil, err
 		}

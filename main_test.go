@@ -159,7 +159,7 @@ func stubValidatorResponses() {
 	validatorsModule.GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 		ctx := context.Background()
 
-		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(nil))
+		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return nil, err
 		}
@@ -201,7 +201,14 @@ func (q *queryClient) ValidatorDelegations(ctx context.Context, in *delegationTy
 func stubDelegationResponses() {
 	// stub out the grpc connection for testing
 	delegationsModule.GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-		return nil, nil
+		ctx := context.Background()
+
+		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return nil, err
+		}
+
+		return conn, nil
 	}
 
 	delegationsModule.DelegationTypesNewQueryClient = func(conn grpc1.ClientConn) delegationTypes.QueryClient {
