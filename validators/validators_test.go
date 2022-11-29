@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	query "github.com/cosmos/cosmos-sdk/types/query"
-	grpc1 "github.com/gogo/protobuf/grpc"
+	grpc_protobuf "github.com/gogo/protobuf/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -84,7 +84,7 @@ func stubValidatorResponses() {
 		return conn, nil
 	}
 
-	ValidatorTypesNewQueryClient = func(conn grpc1.ClientConn) validatorTypes.QueryClient {
+	ValidatorTypesNewQueryClient = func(conn grpc_protobuf.ClientConn) validatorTypes.QueryClient {
 		client := &queryClient{}
 		return client
 	}

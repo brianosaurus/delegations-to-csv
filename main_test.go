@@ -9,7 +9,7 @@ import (
 	context "context"
 	"testing"
 
-	grpc1 "github.com/gogo/protobuf/grpc"
+	grpc_protobuf "github.com/gogo/protobuf/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -167,7 +167,7 @@ func stubValidatorResponses() {
 		return conn, nil
 	}
 
-	validatorsModule.ValidatorTypesNewQueryClient = func(conn grpc1.ClientConn) validatorTypes.QueryClient {
+	validatorsModule.ValidatorTypesNewQueryClient = func(conn grpc_protobuf.ClientConn) validatorTypes.QueryClient {
 		client := &queryClient{}
 		return client
 	}
@@ -211,7 +211,7 @@ func stubDelegationResponses() {
 		return conn, nil
 	}
 
-	delegationsModule.DelegationTypesNewQueryClient = func(conn grpc1.ClientConn) delegationTypes.QueryClient {
+	delegationsModule.DelegationTypesNewQueryClient = func(conn grpc_protobuf.ClientConn) delegationTypes.QueryClient {
 		client := &queryClient{}
 		return client
 	}
