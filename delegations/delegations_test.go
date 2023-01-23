@@ -9,6 +9,7 @@ import (
 	query "github.com/cosmos/cosmos-sdk/types/query"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -89,7 +90,14 @@ func (q *queryClient) ValidatorDelegations(ctx context.Context, in *delegationTy
 func stubDelegationResponses() {
 	// stub out the grpc connection for testing
 	GrpcDial = func(node string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-		return nil, nil
+		ctx := context.Background()
+
+		conn, err := grpc.DialContext(ctx, "", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return nil, err
+		}
+
+		return conn, nil
 	}
 
 	DelegationTypesNewQueryClient = func(conn grpc1.ClientConn) delegationTypes.QueryClient {

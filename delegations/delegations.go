@@ -49,10 +49,6 @@ func GetDelegationResponses(node string, validators *delegationTypes.Validators)
 		return &delegationResponses, err
 	}
 
-	// this is a hack to make testing work. I'm sure there is a better solution but I had to punt due to time
-	if grpcConn != nil {
-		defer grpcConn.Close()
-	}
 	delegationResponsesClient := DelegationTypesNewQueryClient(grpcConn)
 
 	for _, validator := range *validators {

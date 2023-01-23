@@ -36,11 +36,6 @@ func GetValidators(node string) (*validatorTypes.Validators, error) {
 		return &validators, err
 	}
 
-	// this is a hack to make testing work. I'm sure there is a better solution but I had to punt due to time
-	if grpcConn != nil {
-		defer grpcConn.Close()
-	}
-
 	// This creates a gRPC client to query the x/bank service.
 	validatorsClient := ValidatorTypesNewQueryClient(grpcConn)
 	validatorsResult, err := validatorsClient.Validators(
