@@ -1,6 +1,6 @@
 # Delegations to CSV
 
-## Running the challenge
+## Running 
 
 To run the code 
 ```sh
